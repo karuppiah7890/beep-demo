@@ -1,0 +1,16 @@
+fileignoreconfig:
+- filename: vendor/golang.org/x/sys/windows/env_windows.go
+  checksum: 58c5c49b6889b29cdcf33663048a5f4b07e0a81e6007148a7cdac2674e65f482
+  ignore_detectors: []
+- filename: go.sum
+  checksum: 59c4044607855a284339780a63d6da4ac042514f03c829b9a08ff00c70aa769c
+  ignore_detectors: []
+- filename: vendor/github.com/faiface/beep/go.sum
+  checksum: 12239ee6e62f8b78f38fbd2216f60d22117b34c51bb326b1e535334ddf78dcd7
+  ignore_detectors: []
+- filename: vendor/github.com/hajimehoshi/go-mp3/go.sum
+  checksum: 7ee142eef1a13491574e82e165f9b4ea9c14d689c912ac84bdbb9deaf2aff346
+  ignore_detectors: []
+- filename: vendor/github.com/hajimehoshi/oto/go.sum
+  checksum: fb8ca14a79e47e84dc316744b48ddea9651329fdbc05a8fc8de2513e090aaa32
+  ignore_detectors: []
