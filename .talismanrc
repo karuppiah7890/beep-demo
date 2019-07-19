@@ -3,7 +3,7 @@ fileignoreconfig:
   checksum: 58c5c49b6889b29cdcf33663048a5f4b07e0a81e6007148a7cdac2674e65f482
   ignore_detectors: []
 - filename: go.sum
-  checksum: 38d32348effb4bb7b1b54dd204b303a83341080ad9a45ed785cdbf59020a1d0c
+  checksum: c6f6106c77489d1cc4b0a6d1f2a070b68209b1e42974d0de7698e6fabcad47f8
   ignore_detectors: []
 - filename: vendor/github.com/faiface/beep/go.sum
   checksum: 12239ee6e62f8b78f38fbd2216f60d22117b34c51bb326b1e535334ddf78dcd7
