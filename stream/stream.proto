@@ -6,5 +6,5 @@ message PositionRequest {}
 message PositionResponse { int64 position = 1; }
 
 service Stream {
-  rpc Position (PositionRequest) returns (PositionResponse) {}
+  rpc Position (PositionRequest) returns (stream PositionResponse) {}
 }

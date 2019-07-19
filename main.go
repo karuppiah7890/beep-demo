@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -20,12 +21,29 @@ type streamServer struct {
 	streamer beep.StreamSeekCloser
 }
 
-func (s streamServer) Position(context.Context, *stream.PositionRequest) (*stream.PositionResponse, error) {
-	speaker.Lock()
-	position := s.streamer.Position()
-	speaker.Unlock()
+func (s streamServer) Position(_ *stream.PositionRequest, respStream stream.Stream_PositionServer) error {
+	ticker := time.NewTicker(500 * time.Millisecond)
 
-	return &stream.PositionResponse{Position: int64(position)}, nil
+	for range ticker.C {
+		speaker.Lock()
+		position := s.streamer.Position()
+		err := respStream.Send(&stream.PositionResponse{Position: int64(position)})
+
+		if err != nil {
+			log.Fatalf("error occurred while sending response %v", err)
+			return err
+		}
+
+		speaker.Unlock()
+
+		len := s.streamer.Len()
+		if position == len {
+			ticker.Stop()
+			break
+		}
+	}
+
+	return nil
 }
 
 func newStreamServer(streamer beep.StreamSeekCloser) *streamServer {
@@ -66,12 +84,19 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
-		positionResponse, err := streamClient.Position(ctx, &stream.PositionRequest{})
+		respStream, err := streamClient.Position(ctx, &stream.PositionRequest{})
 		if err != nil {
 			log.Fatalf("could not get stream position: %v", err)
 		}
 
-		if err = streamer.Seek(int(positionResponse.GetPosition())); err != nil {
+		positionResponse, err := respStream.Recv()
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			log.Fatalf("%v.Position(_) = _, %v", streamClient, err)
+		}
+		if err = streamer.Seek(int(positionResponse.Position)); err != nil {
 			log.Fatalf("could not seek to position in stream: %v", err)
 		}
 
@@ -79,13 +104,26 @@ func main() {
 			done <- true
 		})))
 
+		for {
+			positionResponse, err := respStream.Recv()
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				log.Fatalf("%v.Position(_) = _, %v", streamClient, err)
+			}
+			if err = streamer.Seek(int(positionResponse.Position)); err != nil {
+				log.Fatalf("could not seek to position in stream: %v", err)
+			}
+		}
+
 		<-done
 	} else if argsLength == 1 {
 		speaker.Play(beep.Seq(streamer, beep.Callback(func() {
 			done <- true
 		})))
 
-		lis, err := net.Listen("tcp", "localhost:8080")
+		lis, err := net.Listen("tcp", "0.0.0.0:8080")
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
